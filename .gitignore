@@ -5,3 +5,6 @@ __pycache__/
 *.parquet
 *.zip
 submission.csv
+feature_engineering.py
+feature_engineering_og.py
+Untitled7.ipynb
