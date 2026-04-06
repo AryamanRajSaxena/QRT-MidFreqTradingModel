@@ -1,0 +1,21 @@
+# Machine Learning Quantitative Trading Strategy Pipeline
+
+## 1. Feature Engineering (Baseline Signal Processing)
+**Files:** `feature_engineering_ogog.py`
+The strategy downselects from roughly 15 preferred base technical indicators (MACD, RSI, CMO, trend channels, ATR, OBV, etc.) and engineers a clean, robust set of meta-signals without overcomplicating the feature space:
+*   **Vol-Adjusted Trends & Momentum:** Signals are mathematically divided by their corresponding trailing volatilities (e.g., `trend_vol_adj = trend_20_60 / vol_60`, `macd_vol`, `rsi_vol`) to ensure consistent cross-sectional comparability regardless of the market’s aggregate variance on any given day.
+*   **Meta Momentum:** A cross-sectionally ranked, multi-indicator momentum score perfectly averaging the relative rank momentum of RSI, MACD, and the Chande Momentum Oscillator.
+*   **Regime Identifiers:** HAR-style volatility metrics (daily, weekly, monthly rolling averages) and a smoothened continuous market regime indicator evaluated via a 1-year rolling Z-score passed through a logistical sigmoid function, replacing strict arbitrary binary thresholds.
+
+## 2. ML Alpha Discovery & Tree Boosting
+**Files:** `a23_xgb.py`
+The core predictive engine leverages Gradient Boosted Decision Trees (XGBoost) combined with automated Genetic Programming:
+*   **Genetic Programming (GP):** Before XGBoost trains, `gplearn` evolves random mathematical combinations of the base features across multiple generations to discover hidden, highly complex non-linear alpha signals. The best surviving mathematical tree representations are explicitly appended as new features to the dataset.
+*   **XGBoost Prediction Engine:** XGBoost learns to predict a `compound_target` (e.g., forward 5-day rolling return). Overfitting and outlier market shocks are mitigated through rigorous cross-sectional ranking on the inputs, ensuring the model focuses entirely on relative outperformance rather than raw directional noise.
+*   **Model Explainability:** The script natively integrates the SHAP (SHapley Additive exPlanations) library to map the exact feature importance directly after training, allowing visual/quantitative tracking of what specific features drive tree splits.
+
+## 3. Supporting Pipeline Infrastructure
+**Files:** Imported functions from `a23.py`
+The overarching pipeline natively relies on essential quantitative infrastructure originally engineered inside `a23.py`:
+*   **Leakage Prevention & Targeting:** Managing the creation and alignment of the shifted targets (`compound_target_5d`) to strictly guarantee models only train against statistically independent, future-forward data with absolutely zero lookahead bias.
+*   **Cross-Sectional Rank Operations (CSRank):** Providing the critical `_csrank_3d` transformation frameworks that securely map sparse continuous predictors safely into uniformly bound spaces (`[0.0, 1.0]`) so the tree boosting algorithms aren't corrupted by cross-sectional scale variances.

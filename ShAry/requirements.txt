@@ -1,0 +1,23 @@
+# External Dependencies for ML Quantitative Trading Strategy
+
+# Core Data Manipulation
+pandas>=1.3.0
+numpy>=1.20.0
+scipy>=1.7.0
+
+# Mathematical & Symbolic Machine Learning
+# Used for Stage 1 alpha generation: evolving non-linear genetic programs
+gplearn>=0.4.2
+
+# Gradient Boosted Decision Trees
+# Used for Stage 2 cross-sectional alpha prediction
+xgboost>=1.5.0
+lightgbm>=3.3.0
+
+# Model Explainability
+# For generating SHAP feature importance output during model validation
+shap>=0.40.0
+
+# Visualization & Progress
+plotly>=5.4.0
+tqdm>=4.62.0
