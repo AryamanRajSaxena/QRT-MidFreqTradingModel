@@ -153,7 +153,7 @@ Benefits:
 
 ## 4. Portfolio Construction & Benchmark Strategy
 
-**Function:** `get_weights(...)`
+**Function:** `generate_portfolio_vectorized(...)`
 
 This module implements a **stateful long-short portfolio construction strategy** that converts model predictions into tradable positions while minimizing turnover and instability.
 
