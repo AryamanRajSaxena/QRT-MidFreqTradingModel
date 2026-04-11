@@ -151,7 +151,100 @@ Benefits:
 * Improves stability of tree-based models
 * Forces model to learn **relative alpha signals**
 
+## 4. Portfolio Construction & Benchmark Strategy
+
+**Function:** `get_weights(...)`
+
+This module implements a **stateful long-short portfolio construction strategy** that converts model predictions into tradable positions while minimizing turnover and instability.
+
 ---
+
+### Core Concept
+
+The function builds a **market-neutral portfolio**:
+
+* Top-ranked stocks → **Long positions**
+* Bottom-ranked stocks → **Short positions**
+
+Using:
+
+* `ml_scores` (model predictions)
+* Daily tradable universe (`today_universe`)
+
+---
+
+### Portfolio Structure
+
+* **40 long positions**
+* **40 short positions**
+* Equal-weight allocation:
+
+  * +0.5 total capital (long side)
+  * -0.5 total capital (short side)
+
+---
+
+### Rank-Based Selection
+
+Stocks are ranked daily based on predicted returns:
+
+* Highest scores → strongest expected outperformers
+* Lowest scores → weakest expected performers
+
+---
+
+### Hysteresis (Sticky Weights)
+
+To reduce unnecessary trading, the strategy uses **rank hysteresis**:
+
+* Instead of reselecting top 40 stocks every day
+* A **buffer zone** is introduced (e.g., top 67 candidates)
+
+#### Mechanism:
+
+* Previously held positions are **retained** if they remain within the buffer
+* Only underperforming positions are replaced
+
+This results in:
+
+* Lower turnover
+* Reduced transaction costs
+* More stable portfolios
+
+---
+
+### Rebalancing Logic
+
+* Portfolio is updated periodically (`rebalance_every`)
+* Forced rebalancing occurs if:
+
+  * Portfolio is uninitialized
+  * Stocks exit the tradable universe
+
+Otherwise:
+
+* Positions are **carried forward unchanged**
+
+---
+
+### Safety Handling
+
+* Handles missing predictions
+* Skips invalid days
+* Ensures no crashes due to universe mismatch
+
+---
+
+### Design Philosophy
+
+This component emphasizes:
+
+* **Stability over reactivity**
+* **Relative ranking over absolute predictions**
+* **Turnover minimization via hysteresis**
+
+---
+
 
 ## Key Design Philosophy
 
@@ -176,11 +269,12 @@ The pipeline is built on three principles:
 
 ## Summary Workflow
 
-1. Generate base technical indicators
+1. Generate base technical indicators + volatility indicators
 2. Normalize and rank features cross-sectionally
 3. Use Genetic Programming to create nonlinear features
 4. Train XGBoost on engineered + GP features
 5. Interpret results using SHAP
+6. Convert predictions to portfolio weights using rank-hysteresis
 
 ---
 
